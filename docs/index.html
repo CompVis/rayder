@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="title" content="RayDer: Scalable Self-Supervised Novel View Synthesis from Real-World Video">
+  <meta name="description" content="RayDer enables scalable self-supervised novel view synthesis by training on general, dynamic real-world video instead of static-scene data.">
+  <meta name="keywords" content="novel view synthesis, self-supervised learning, scaling, computer vision, 3D reconstruction, NVS">
+  <meta name="author" content="Ulrich Prestel, Stefan Andreas Baumann, Nick Stracke, Björn Ommer">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://compvis.github.io/rayder/">
+  <meta property="og:title" content="RayDer: Scalable Self-Supervised Novel View Synthesis from Real-World Video">
+  <meta property="og:description" content="RayDer enables scalable self-supervised novel view synthesis by training on general, dynamic real-world video.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RayDer: Scalable Self-Supervised Novel View Synthesis from Real-World Video">
+  <meta name="twitter:description" content="Scalable self-supervised NVS from real-world video.">
+  <meta name="citation_title" content="RayDer: Scalable Self-Supervised Novel View Synthesis from Real-World Video">
+  <meta name="citation_author" content="Prestel, Ulrich">
+  <meta name="citation_author" content="Baumann, Stefan Andreas">
+  <meta name="citation_author" content="Stracke, Nick">
+  <meta name="citation_author" content="Ommer, Björn">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="theme-color" content="#ffffff">
+  <title>RayDer: Scalable Self-Supervised Novel View Synthesis</title>
+
+  <link rel="canonical" href="https://compvis.github.io/rayder/">
+  <link rel="icon" type="image/svg+xml" href="static/images/favicon.svg">
+  <link rel="apple-touch-icon" href="static/images/favicon.svg">
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="more-works-container">
+    <button class="more-works-btn" type="button" onclick="toggleMoreWorks()" title="Related Works" aria-expanded="false" aria-controls="moreWorksDropdown">
+      <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5a2 2 0 00-2 2v14l4-3h12a2 2 0 002-2V5a2 2 0 00-2-2m0 11H6.33L5 15.25V5h14zm-9-7h7v2h-7zm0 3h5v2h-5zM7 7h2v5H7z"/></svg>
+      <span>Related Works</span>
+      <svg class="icon-svg dropdown-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg>
+    </button>
+    <div class="more-works-dropdown" id="moreWorksDropdown" aria-hidden="true">
+      <div class="dropdown-header">
+        <h4>Related Works</h4>
+        <button class="close-btn" onclick="toggleMoreWorks()" aria-label="Close related works">
+          <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.29l6.3 6.3 6.29-6.3z"/></svg>
+        </button>
+      </div>
+      <div class="works-list">
+        <div class="works-section-label">Related Work</div>
+        <a href="https://hwjiang1510.github.io/RayZer/" class="work-item" target="_blank" rel="noreferrer">
+          <h5>RayZer</h5>
+          <span class="work-venue">ICCV 2025</span>
+          <p>Self-supervised NVS from unposed images via ray-conditioned rendering. Our direct predecessor.</p>
+        </a>
+        <a href="https://qitaozhao.github.io/E-RayZer" class="work-item" target="_blank" rel="noreferrer">
+          <h5>E-RayZer</h5>
+          <span class="work-venue">CVPR 2026</span>
+          <p>Self-supervised 3D reconstruction as spatial visual pre-training, extending RayZer to new domains.</p>
+        </a>
+        <div class="works-section-label">From the Authors</div>
+        <a href="https://compvis.github.io/flow-poke-transformer/" class="work-item" target="_blank" rel="noreferrer">
+          <h5>What If &ndash; Flow Poke Transformer</h5>
+          <span class="work-venue">ICCV 2025</span>
+          <p>Understanding motion through sparse interactions in a single image.</p>
+        </a>
+        <a href="https://compvis.github.io/myriad/" class="work-item" target="_blank" rel="noreferrer">
+          <h5>Envisioning the Future, One Step at a Time</h5>
+          <span class="work-venue">CVPR 2026</span>
+          <p>Autoregressive diffusion over sparse trajectories for future motion reasoning.</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l-7 7 1.41 1.41L11 8.83V19h2V8.83l4.59 4.58L19 12z"/></svg>
+  </button>
+
+  <main>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero publication-header">
+      <div class="hero-body">
+        <div class="container is-max-desktop has-text-centered">
+          <!-- <p class="publication-venue">Preprint</p> -->
+          <h1 class="title publication-title">RayDer: Scalable Self-Supervised<br class="mobile-break"> Novel View Synthesis<br class="mobile-break"> from Real-World Video</h1>
+
+          <div class="publication-authors">
+            <span class="author-block"><a href="https://scholar.google.com/citations?user=-kkLqx0AAAAJ&hl=en" target="_blank" rel="noreferrer">Ulrich Prestel</a><sup>1,2,*</sup>,</span>
+            <span class="author-block"><a href="https://stefan-baumann.eu/" target="_blank" rel="noreferrer">Stefan Andreas Baumann</a><sup>1,2,*</sup>,</span>
+            <span class="author-block"><a href="https://nickstracke.dev/" target="_blank" rel="noreferrer">Nick Stracke</a><sup>1,2</sup>,</span>
+            <span class="author-block"><a href="https://ommer-lab.com/people/ommer/" target="_blank" rel="noreferrer">Björn Ommer</a><sup>1,2</sup></span>
+          </div>
+
+          <div class="publication-affiliations">
+            <span><sup>1</sup>CompVis @ LMU Munich</span>
+            <span><sup>2</sup>MCML</span>
+          </div>
+
+          <p class="equal-contrib"><sup>*</sup>Equal contribution</p>
+
+          <div class="publication-links">
+            <span class="link-block">
+              <a class="external-link button is-normal is-rounded is-dark" href="https://arxiv.org/pdf/2605.31535" target="_blank" rel="noreferrer">
+                <span class="icon"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l6 6v14H6zm7 1.5V9h5.5zM9 13h2.5a2.5 2.5 0 010 5H10v3H9zm1 1v3h1.5a1.5 1.5 0 000-3zm5 0c1.66 0 3 1.34 3 3v1c0 1.66-1.34 3-3 3h-2v-7zm-1 1v5h1a2 2 0 002-2v-1a2 2 0 00-2-2zm-8 0h2v1H7v1h1v1H7v2H6z"/></svg></span>
+                <span>Paper</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a class="external-link button is-normal is-rounded is-dark" href="https://arxiv.org/abs/2605.31535" target="_blank" rel="noreferrer">
+                <span class="icon"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.27 5.57 8.3 5 6 5a4 4 0 00-4 4v9a1 1 0 001.45.89C5.05 18.09 6.39 17.75 8 17.75c1.82 0 3.54.43 4 1 .46-.57 2.18-1 4-1 1.61 0 2.95.34 4.55 1.14A1 1 0 0022 18V9a4 4 0 00-4-4c-2.3 0-4.27.57-6 1.5M4 9a2 2 0 012-2c2.04 0 3.79.53 5 1.33v8.2c-1.3-.5-2.67-.78-4-.78-1.03 0-2.03.14-3 .42zm16 7.17c-.97-.28-1.97-.42-3-.42-1.33 0-2.7.28-4 .78v-8.2c1.21-.8 2.96-1.33 5-1.33a2 2 0 012 2z"/></svg></span>
+                <span>arXiv</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a class="external-link button is-normal is-rounded is-dark" href="https://github.com/CompVis/rayder" target="_blank" rel="noreferrer">
+                <span class="icon"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5A12 12 0 008.2 23.9c.6.11.82-.26.82-.58v-2.23c-3.34.73-4.04-1.42-4.04-1.42-.55-1.38-1.33-1.75-1.33-1.75-1.09-.73.08-.72.08-.72 1.2.09 1.84 1.22 1.84 1.22 1.08 1.82 2.82 1.3 3.5.99.1-.77.42-1.3.76-1.6-2.67-.3-5.47-1.32-5.47-5.86 0-1.3.47-2.37 1.24-3.21-.13-.3-.54-1.5.12-3.13 0 0 1.01-.32 3.3 1.23A11.6 11.6 0 0112 6.6c1.02 0 2.05.14 3.01.4 2.29-1.55 3.29-1.23 3.29-1.23.67 1.63.26 2.83.13 3.13.77.84 1.23 1.91 1.23 3.21 0 4.55-2.8 5.55-5.48 5.85.43.37.82 1.1.82 2.22v3.29c0 .32.21.7.83.58A12 12 0 0012 .5"/></svg></span>
+                <span>Code</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a class="external-link button is-normal is-rounded is-dark" href="https://huggingface.co/CompVis/rayder" target="_blank" rel="noreferrer">
+                <span class="icon"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></span>
+                <span>Weights</span>
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TEASER ==================== -->
+    <section class="hero teaser">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <figure class="teaser-figure">
+            <img src="static/images/paper-svg/teaser-concept.svg" alt="RayDer enables training NVS from abundant general video, removing the static-scene data bottleneck" loading="eager">
+            <figcaption>
+              <strong>Training Static-scene Novel View Synthesis from Abundant Video.</strong>
+              Existing approaches rely on scarce data sources: supervised NVS requires posed multi-view images, while prior self-supervised methods require unposed videos of static scenes.
+              RayDer instead trains from generic unposed videos that may contain dynamic objects, enabling learning from the dominant form of visual data and unlocking improved scaling with dataset size.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIDEO SAMPLES ==================== -->
+    <section class="section" id="video-samples">
+      <div class="container is-max-desktop">
+        <p class="content paper-copy" style="margin: 0 0 0.75rem;"><span style="color: #2eb134; font-weight: 700;">Zero-shot</span> qualitative video samples on DL3DV-10K.</p>
+
+        <div class="video-carousel" id="qualitativeCarousel">
+          <div class="carousel-viewport">
+            <div class="carousel-slide active">
+              <div class="video-item">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/video_grid_1_h264.mp4" type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <div class="carousel-slide">
+              <div class="video-item">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/video_grid_2_h264.mp4" type="video/mp4">
+                </video>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-controls">
+            <button class="carousel-btn" onclick="carouselPrev('qualitativeCarousel')" aria-label="Previous qualitative sample">
+              <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            <div class="carousel-dots">
+              <button class="carousel-dot active" onclick="carouselGoTo(0, 'qualitativeCarousel')" aria-label="Qualitative sample 1"></button>
+              <button class="carousel-dot" onclick="carouselGoTo(1, 'qualitativeCarousel')" aria-label="Qualitative sample 2"></button>
+            </div>
+            <button class="carousel-btn" onclick="carouselNext('qualitativeCarousel')" aria-label="Next qualitative sample">
+              <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TL;DR ==================== -->
+    <section class="section hero is-light" id="tldr">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <h2 class="title is-3 section-title">TL;DR</h2>
+          <div class="content tldr-copy">
+            <p>
+              Self-supervised novel view synthesis methods are fundamentally <em>data-limited</em>: they require static-scene training data, which is scarce. RayDer removes this bottleneck by enabling <em>stable training on general, dynamic real-world video</em>. By consolidating three separate networks into one unified transformer, introducing dynamic state prediction with dropout, and improving pose learning through autoregressive training, RayDer's performance scales predictably with data, model size, and compute &ndash; following <em>power-law scaling relationships</em> (R&sup2;&nbsp;&gt;&nbsp;0.99) analogous to those observed in LLMs.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== KEY NUMBERS ==================== -->
+    <section class="section key-numbers-section" id="highlights">
+      <div class="container is-max-desktop">
+        <div class="key-numbers key-numbers-5">
+          <div class="key-number">
+            <span class="key-value">0</span>
+            <span class="key-label">Pose supervision required</span>
+            <span class="key-context">Fully self-supervised, no pretrained weights</span>
+          </div>
+          <div class="key-number">
+            <span class="key-value">+2.9<span class="key-unit">dB</span></span>
+            <span class="key-label">Over supervised LVSM</span>
+            <span class="key-context">Self-supervised outperforms GT-pose training</span>
+          </div>
+          <div class="key-number">
+            <span class="key-value">10<span class="key-unit">&times;</span></span>
+            <span class="key-label">More training data</span>
+            <span class="key-context">2.7M general videos vs ~250K static-scene limit</span>
+          </div>
+          <div class="key-number">
+            <span class="key-value">1</span>
+            <span class="key-label">Single transformer</span>
+            <span class="key-context">Consolidated from 3 separate ViTs</span>
+          </div>
+          <div class="key-number">
+            <span class="key-value">R&sup2;<span class="key-unit">&nbsp;</span><span class="key-vs">&gt;</span> 0.99</span>
+            <span class="key-label">Clean scaling</span>
+            <span class="key-context">Power-law fit across data, model size, and compute</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== IN-THE-WILD COMPARISONS ==================== -->
+    <section class="section hero is-light" id="videos">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <h2 class="title is-3 section-title">In-the-Wild Comparisons</h2>
+          <p class="content paper-copy" style="margin-bottom: 0.75rem;">General self-supervised NVS on in-the-wild scenes. E-RayZer (left) vs. RayDer (right).</p>
+
+          <div class="video-carousel" id="videoCarousel">
+            <div class="carousel-viewport">
+              <div class="carousel-slide active">
+                <div class="video-pair">
+                  <div class="video-item">
+                    <span class="video-label">E-RayZer</span>
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/1_e_rayzer.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="video-item">
+                    <span class="video-label video-label-ours">RayDer (Ours)</span>
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/1_ours.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-slide">
+                <div class="video-pair">
+                  <div class="video-item">
+                    <span class="video-label">E-RayZer</span>
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/2_e_rayzer.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="video-item">
+                    <span class="video-label video-label-ours">RayDer (Ours)</span>
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/2_ours.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-slide">
+                <div class="video-pair">
+                  <div class="video-item">
+                    <span class="video-label">E-RayZer</span>
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/3_e_rayzer.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="video-item">
+                    <span class="video-label video-label-ours">RayDer (Ours)</span>
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/3_ours.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-slide">
+                <div class="video-pair">
+                  <div class="video-item">
+                    <span class="video-label">E-RayZer</span>
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/4_e_rayzer.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="video-item">
+                    <span class="video-label video-label-ours">RayDer (Ours)</span>
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/4_ours.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-controls">
+              <button class="carousel-btn" onclick="carouselPrev()" aria-label="Previous comparison">
+                <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+              </button>
+              <div class="carousel-dots">
+                <button class="carousel-dot active" onclick="carouselGoTo(0)" aria-label="Scene 1"></button>
+                <button class="carousel-dot" onclick="carouselGoTo(1)" aria-label="Scene 2"></button>
+                <button class="carousel-dot" onclick="carouselGoTo(2)" aria-label="Scene 3"></button>
+                <button class="carousel-dot" onclick="carouselGoTo(3)" aria-label="Scene 4"></button>
+              </div>
+              <button class="carousel-btn" onclick="carouselNext()" aria-label="Next comparison">
+                <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== METHOD ==================== -->
+    <section class="section" id="method">
+      <div class="container is-max-desktop">
+        <h2 class="title is-3 section-title">Method</h2>
+        <div class="content paper-copy">
+          <p>
+            Starting from RayZer &ndash; three separate ViTs for camera estimation, scene reconstruction, and rendering, trained on static-scene video &ndash; we identify and address three scaling bottlenecks:
+          </p>
+          <p>
+            <strong>Data.</strong>
+            Existing methods require static scenes, severely limiting data scale. Training on dynamic video causes instabilities as the model is forced to hide scene dynamics inside the pose representation. We resolve this via a train-time per-view <em>dynamic state embedding</em>, with random dropout at training time, eliminating all training divergence.
+          </p>
+          <p>
+            <strong>System.</strong>
+            We consolidate all three networks into a single unified model with two modes (camera/state estimation and NVS), conditioned on token role via adaptive norms. A factorized attention pattern enables KV caching → efficient NVS.
+          </p>
+          <p>
+            <strong>Quality.</strong>
+            Random-order autoregressive training over views prevents frame-order pose shortcuts, improving both camera estimation and NVS quality. Shallow high-resolution neighborhood-attention layers around the inner backbone add high-frequency detail at minimal cost.
+          </p>
+        </div>
+
+        <figure class="paper-figure figure-padded" style="margin-bottom: 1.5rem;">
+          <img src="static/images/paper-svg/architecture-overview.svg" alt="RayDer architecture overview: a single transformer unifying camera estimation and novel view synthesis" loading="lazy">
+          <figcaption>
+            <strong>Architecture Overview.</strong> RayDer unifies camera estimation <strong>(a)</strong> and novel view synthesis <strong>(b)</strong> in a single transformer backbone. Lightweight local intra-frame encoder and decoder layers handle high-resolution processing.
+          </figcaption>
+        </figure>
+
+        <div class="figure-grid">
+          <figure class="paper-figure">
+            <img src="static/images/paper-svg/consolidation.svg" alt="Consolidation of three separate networks into a single unified model">
+            <figcaption>
+              <strong>Consolidation.</strong> We combine RayZer's three separate networks (camera estimator, scene reconstructor, renderer) into a single unified model, simplifying scaling decisions.
+            </figcaption>
+          </figure>
+          <figure class="paper-figure">
+            <img src="static/images/paper-svg/ar-pose-learning.svg" alt="Autoregressive pose learning: many input views allow time-axis shortcuts while sparse views require true poses">
+            <figcaption>
+              <strong>Autoregressive Pose Learning.</strong> Many input views <strong>(a)</strong> allow encoding poses via an implicit "time" axis; sparse views <strong>(b)</strong> require true relative camera poses. Random-order autoregression forces learning both.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SCALING ==================== -->
+    <section class="section hero is-light" id="scaling">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <h2 class="title is-3 section-title">Scaling Behavior</h2>
+          <div class="content paper-copy">
+            <p>
+              By enabling stable training on general videos, RayDer allows studying scaling behavior across multiple orders of magnitude in both data and model size. We train at four model scales on three dataset fractions of SpatialVid: <strong>1%</strong> (~27k videos), <strong>10%</strong> (~270k, matching the combined size of commonly used static-scene NVS datasets), and <strong>100%</strong> (~2.7M).
+            </p>
+            <p>
+              Both data and model scaling consistently lead to improvements, provided neither is a bottleneck. Large models overfit on small data, and small models saturate early &ndash; <strong>scaling neither compute nor data alone is sufficient</strong>.
+            </p>
+          </div>
+
+          <figure class="paper-figure figure-padded">
+            <img src="static/images/paper-svg/scaling-plots.svg" alt="Scaling behavior across data and model size showing consistent improvements" loading="lazy">
+            <figcaption>
+              <strong>Scaling Across Data and Model Size.</strong>
+              Models trained at different scales (shades of green) and dataset fractions (shades of blue), evaluated zero-shot on RE10K.
+              <em>Left:</em> Increasing data scale consistently improves performance when model capacity is sufficient.
+              <em>Right:</em> Increasing model scale helps, but insufficient data imposes a ceiling.
+            </figcaption>
+          </figure>
+
+          <div class="scaling-dual-figure">
+            <figure class="paper-figure figure-padded">
+              <img src="static/images/paper-svg/compute-optimal-scaling.svg" alt="Compute-optimal scaling analysis showing power-law fit" loading="lazy">
+              <figcaption>
+                <strong>Compute-Optimal Scaling.</strong>
+                RayDer's compute-optimal Pareto frontier across both compute and dataset size is well-approximated by a single power law (R&sup2;&nbsp;&gt;&nbsp;0.99 across all metrics).
+              </figcaption>
+            </figure>
+            <figure class="paper-figure figure-padded">
+              <img src="static/images/paper-svg/scaling-surface.svg" alt="3D surface visualization of scaling behavior" loading="lazy">
+              <figcaption>
+                <strong>Scaling Surface.</strong>
+                3D visualization of the compute-data scaling surface, showing how performance depends on both axes simultaneously.
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== QUALITATIVE SCALING ==================== -->
+    <section class="section" id="qualitative-scaling">
+      <div class="container is-max-desktop">
+        <h2 class="title is-3 section-title">Qualitative Scaling</h2>
+        <div class="content paper-copy">
+          <p>
+            RayDer's qualitative behavior follows the trends seen in quantitative evaluations: jointly increasing data and compute improves NVS quality, with larger models on more data producing sharper, more detailed novel views.
+          </p>
+        </div>
+        <figure class="paper-figure figure-padded">
+          <img src="static/images/paper-svg/qualitative-scaling.svg" alt="Qualitative comparison across model scales and data fractions showing progressive improvement" loading="lazy">
+          <figcaption>
+            <strong>Qualitative Scaling.</strong> More data and compute jointly improve NVS quality, consistent with quantitative scaling trends.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ==================== RESULTS ==================== -->
+    <section class="section hero is-light" id="results">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <h2 class="title is-3 section-title">Results</h2>
+
+        <!-- Ablation Table -->
+        <div class="results-block">
+          <div class="expandable-section">
+            <button class="expand-btn" onclick="toggleExpand(this)" aria-expanded="false">
+              <span data-show="Show ablation study (Configs A-H)" data-hide="Hide ablation study">Show ablation study (Configs A-H)</span>
+              <svg class="icon-svg expand-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="expandable-content">
+              <p class="expand-note">Progressive modifications evaluated on RE10K (NVS) and DL3DV-10k (camera estimation). Trained on SV-HQ.</p>
+              <div class="results-table-wrapper">
+                <table class="table is-fullwidth results-table detailed-table">
+                  <thead>
+                    <tr>
+                      <th colspan="2" rowspan="2">Configuration</th>
+                      <th class="has-text-centered" rowspan="2">Stable</th>
+                      <th colspan="2" class="has-text-centered">NVS PSNR&uarr;</th>
+                      <th colspan="2" class="has-text-centered">Camera Est.</th>
+                    </tr>
+                    <tr>
+                      <th class="has-text-right"><span class="th-sub">w/o state</span></th>
+                      <th class="has-text-right"><span class="th-sub">w/ state</span></th>
+                      <th class="has-text-right"><span class="th-sub">R@10°&uarr;</span></th>
+                      <th class="has-text-right"><span class="th-sub">t@0.1&uarr;</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="muted-row"><td><strong>A</strong></td><td>RayZer-like Baseline</td><td class="has-text-centered">~</td><td class="has-text-right">22.69*</td><td class="has-text-right">&mdash;</td><td class="has-text-right">66.0*</td><td class="has-text-right">7.7*</td></tr>
+                    <tr class="muted-row"><td><strong>B</strong></td><td>+ Dynamic State Prediction</td><td class="has-text-centered"><strong>&check;</strong></td><td class="has-text-right">13.48&dagger;</td><td class="has-text-right">24.67</td><td class="has-text-right">54.4</td><td class="has-text-right">6.0</td></tr>
+                    <tr><td><strong>C</strong></td><td>+ State Dropout</td><td class="has-text-centered"><strong>&check;</strong></td><td class="has-text-right">23.02</td><td class="has-text-right">24.10</td><td class="has-text-right">69.2</td><td class="has-text-right">8.2</td></tr>
+                    <tr><td><strong>D</strong></td><td>+ Single-network Consolidation</td><td class="has-text-centered"><strong>&check;</strong></td><td class="has-text-right">26.98</td><td class="has-text-right">27.49</td><td class="has-text-right">74.1</td><td class="has-text-right">19.7</td></tr>
+                    <tr><td><strong>E</strong></td><td>+ Parallel-target Attention</td><td class="has-text-centered"><strong>&check;</strong></td><td class="has-text-right">25.91</td><td class="has-text-right">26.21</td><td class="has-text-right">70.9</td><td class="has-text-right">18.2</td></tr>
+                    <tr class="muted-row"><td><strong>F</strong></td><td>+ Autoregression (ordered)</td><td class="has-text-centered"><strong>&check;</strong></td><td class="has-text-right">23.53&Dagger;</td><td class="has-text-right">25.78&Dagger;</td><td class="has-text-right">76.5</td><td class="has-text-right">25.2</td></tr>
+                    <tr><td><strong>G</strong></td><td>+ Random-order Autoregression</td><td class="has-text-centered"><strong>&check;</strong></td><td class="has-text-right">27.27</td><td class="has-text-right">29.57</td><td class="has-text-right">86.0</td><td class="has-text-right">39.1</td></tr>
+                    <tr class="ours-row"><td><strong>H</strong></td><td>+ Local High-resolution Layers</td><td class="has-text-centered"><strong>&check;</strong></td><td class="has-text-right"><strong>27.78</strong></td><td class="has-text-right"><strong>30.23</strong></td><td class="has-text-right"><strong>88.7</strong></td><td class="has-text-right"><strong>42.4</strong></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="table-note">*Results for A are from runs that did not diverge. &dagger;State modeling without dropout creates inference-time state dependency. &Dagger;Ordered AR does not generalize to standard NVS test settings.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Open-set NVS -->
+        <div class="results-block">
+          <div class="table-title-row">
+            <h3 class="subtitle is-4 table-title">Open-set Novel View Synthesis</h3>
+            <button class="table-expand-btn" onclick="toggleFullTable(this)" aria-pressed="false">
+              <span>Show all columns</span>
+              <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 18h5V5h-5v13zm-6 0h5V5H4v13zM16 5v13h5V5h-5z"/></svg>
+            </button>
+          </div>
+          <div class="content paper-copy">
+            <p>
+              We train a single RayDer model on generic data and evaluate it zero-shot across six diverse datasets, camera baselines, and numbers of input views. Unlike supervised baselines, RayDer uses its own predicted camera poses at inference &ndash; not ground-truth annotations &ndash; making this a strictly harder setting.
+            </p>
+          </div>
+          <div class="results-table-wrapper">
+            <table class="table is-fullwidth results-table" id="openset-table">
+              <thead>
+                <tr class="compact-hdr">
+                  <th rowspan="2">Method</th>
+                  <th rowspan="2">Params</th>
+                  <th rowspan="2" class="has-text-centered">Self-sup.</th>
+                  <th colspan="2" class="has-text-centered">LLFF</th>
+                  <th colspan="2" class="has-text-centered">CO3D</th>
+                  <th colspan="2" class="has-text-centered">WildRGBD</th>
+                  <th class="has-text-centered">Mip360</th>
+                  <th colspan="2" class="has-text-centered">T&amp;T</th>
+                </tr>
+                <tr class="compact-hdr nview-hdr">
+                  <th class="has-text-right"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">6-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">6-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">6-view</span></th>
+                </tr>
+                <tr class="full-hdr">
+                  <th rowspan="3">Method</th>
+                  <th rowspan="3">Params</th>
+                  <th rowspan="3" class="has-text-centered">Self-sup.</th>
+                  <th colspan="10" class="has-text-centered vp-group-label">Small viewpoint</th>
+                  <th colspan="7" class="has-text-centered vp-group-label lv-start">Large viewpoint</th>
+                </tr>
+                <tr class="full-hdr">
+                  <th colspan="2" class="has-text-centered">LLFF</th>
+                  <th colspan="2" class="has-text-centered">DTU</th>
+                  <th colspan="2" class="has-text-centered">CO3D</th>
+                  <th colspan="2" class="has-text-centered">WildRGBD</th>
+                  <th class="has-text-centered">Mip360</th>
+                  <th class="has-text-centered">T&amp;T</th>
+                  <th class="has-text-centered lv-start">CO3D</th>
+                  <th colspan="2" class="has-text-centered">WildRGBD</th>
+                  <th colspan="2" class="has-text-centered">Mip360</th>
+                  <th colspan="2" class="has-text-centered">T&amp;T</th>
+                </tr>
+                <tr class="full-hdr nview-hdr">
+                  <th class="has-text-right"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">6-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">6-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right lv-start"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">1-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">3-view</span></th>
+                  <th class="has-text-right"><span class="th-sub">6-view</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>MVSplat</td><td>12M</td><td class="has-text-centered sup-no">&cross;</td>
+                  <td class="has-text-right">11.23</td><td class="has-text-right">12.50</td>
+                  <td class="has-text-right ext-col">13.87</td><td class="has-text-right ext-col">15.52</td>
+                  <td class="has-text-right">12.52</td><td class="has-text-right">13.52</td>
+                  <td class="has-text-right">14.56</td><td class="has-text-right">12.54</td>
+                  <td class="has-text-right">13.56</td>
+                  <td class="has-text-right ext-col">13.22</td>
+                  <td class="has-text-right ext-col lv-start">&mdash;</td>
+                  <td class="has-text-right ext-col">&mdash;</td><td class="has-text-right ext-col">&mdash;</td>
+                  <td class="has-text-right ext-col">&mdash;</td><td class="has-text-right ext-col">&mdash;</td>
+                  <td class="has-text-right">&mdash;</td><td class="has-text-right">&mdash;</td>
+                </tr>
+                <tr>
+                  <td>DepthSplat</td><td>354M</td><td class="has-text-centered sup-no">&cross;</td>
+                  <td class="has-text-right">12.07</td><td class="has-text-right">12.62</td>
+                  <td class="has-text-right ext-col">14.15</td><td class="has-text-right ext-col">16.24</td>
+                  <td class="has-text-right">13.23</td><td class="has-text-right">13.77</td>
+                  <td class="has-text-right">15.93</td><td class="has-text-right">14.23</td>
+                  <td class="has-text-right">14.01</td>
+                  <td class="has-text-right ext-col">14.35</td>
+                  <td class="has-text-right ext-col lv-start">10.42</td>
+                  <td class="has-text-right ext-col">9.35</td><td class="has-text-right ext-col">13.53</td>
+                  <td class="has-text-right ext-col">10.49</td><td class="has-text-right ext-col">12.54</td>
+                  <td class="has-text-right">9.78</td><td class="has-text-right">10.12</td>
+                </tr>
+                <tr>
+                  <td>ViewCrafter<sup>&dagger;</sup></td><td>1.4B</td><td class="has-text-centered sup-no">&cross;</td>
+                  <td class="has-text-right">10.53</td><td class="has-text-right">13.52</td>
+                  <td class="has-text-right ext-col">12.66</td><td class="has-text-right ext-col">16.40</td>
+                  <td class="has-text-right"><u>18.96</u></td><td class="has-text-right">14.72</td>
+                  <td class="has-text-right">16.42</td><td class="has-text-right">12.66</td>
+                  <td class="has-text-right">14.59</td>
+                  <td class="has-text-right ext-col"><u>18.07</u></td>
+                  <td class="has-text-right ext-col lv-start">10.11</td>
+                  <td class="has-text-right ext-col">9.12</td><td class="has-text-right ext-col">13.45</td>
+                  <td class="has-text-right ext-col">9.79</td><td class="has-text-right ext-col">10.34</td>
+                  <td class="has-text-right">9.88</td><td class="has-text-right">10.32</td>
+                </tr>
+                <tr>
+                  <td>SEVA<sup>&dagger;</sup></td><td>1.3B</td><td class="has-text-centered sup-no">&cross;</td>
+                  <td class="has-text-right">14.03</td><td class="has-text-right">19.48</td>
+                  <td class="has-text-right ext-col"><u>14.47</u></td><td class="has-text-right ext-col"><strong>20.82</strong></td>
+                  <td class="has-text-right">18.40</td><td class="has-text-right"><strong>19.25</strong></td>
+                  <td class="has-text-right"><u>19.75</u></td><td class="has-text-right"><strong>18.91</strong></td>
+                  <td class="has-text-right"><u>16.70</u></td>
+                  <td class="has-text-right ext-col">15.16</td>
+                  <td class="has-text-right ext-col lv-start"><u>15.30</u></td>
+                  <td class="has-text-right ext-col"><u>14.37</u></td><td class="has-text-right ext-col"><strong>17.28</strong></td>
+                  <td class="has-text-right ext-col">12.93</td><td class="has-text-right ext-col">15.78</td>
+                  <td class="has-text-right">12.65</td><td class="has-text-right">13.80</td>
+                </tr>
+                <tr>
+                  <td>Kaleido<sup>&dagger;&Dagger;</sup></td><td>3.1B</td><td class="has-text-centered sup-no">&cross;</td>
+                  <td class="has-text-right"><u>15.34</u></td><td class="has-text-right"><u>20.71</u></td>
+                  <td class="has-text-right ext-col">&mdash;</td><td class="has-text-right ext-col">&mdash;</td>
+                  <td class="has-text-right">&mdash;</td><td class="has-text-right">&mdash;</td>
+                  <td class="has-text-right">&mdash;</td><td class="has-text-right">&mdash;</td>
+                  <td class="has-text-right"><strong>18.03</strong></td>
+                  <td class="has-text-right ext-col">&mdash;</td>
+                  <td class="has-text-right ext-col lv-start">&mdash;</td>
+                  <td class="has-text-right ext-col">&mdash;</td><td class="has-text-right ext-col">&mdash;</td>
+                  <td class="has-text-right ext-col"><u>13.74</u></td><td class="has-text-right ext-col"><strong>16.78</strong></td>
+                  <td class="has-text-right"><u>13.20</u></td><td class="has-text-right"><strong>14.61</strong></td>
+                </tr>
+                <tr>
+                  <td>E-RayZer<sup>*</sup></td><td>246M</td><td class="has-text-centered sup-yes">&check;</td>
+                  <td class="has-text-right">10.44</td><td class="has-text-right">18.01</td>
+                  <td class="has-text-right ext-col">10.31</td><td class="has-text-right ext-col">16.97</td>
+                  <td class="has-text-right">12.94</td><td class="has-text-right">17.76</td>
+                  <td class="has-text-right">17.72</td><td class="has-text-right">16.18</td>
+                  <td class="has-text-right">15.86</td>
+                  <td class="has-text-right ext-col">10.36</td>
+                  <td class="has-text-right ext-col lv-start">12.94</td>
+                  <td class="has-text-right ext-col">10.53</td><td class="has-text-right ext-col">14.47</td>
+                  <td class="has-text-right ext-col">9.78</td><td class="has-text-right ext-col">15.17</td>
+                  <td class="has-text-right">12.88</td><td class="has-text-right">13.35</td>
+                </tr>
+                <tr class="ours-row">
+                  <td>RayDer-L (Ours)</td><td>743M</td><td class="has-text-centered sup-yes">&check;</td>
+                  <td class="has-text-right"><strong>17.11</strong></td><td class="has-text-right"><strong>21.38</strong></td>
+                  <td class="has-text-right ext-col"><strong>16.01</strong></td><td class="has-text-right ext-col"><u>17.92</u></td>
+                  <td class="has-text-right"><strong>21.10</strong></td><td class="has-text-right"><u>19.09</u></td>
+                  <td class="has-text-right"><strong>20.07</strong></td><td class="has-text-right"><u>17.23</u></td>
+                  <td class="has-text-right">16.25</td>
+                  <td class="has-text-right ext-col"><strong>18.74</strong></td>
+                  <td class="has-text-right ext-col lv-start"><strong>16.84</strong></td>
+                  <td class="has-text-right ext-col"><strong>14.55</strong></td><td class="has-text-right ext-col"><u>15.97</u></td>
+                  <td class="has-text-right ext-col"><strong>14.96</strong></td><td class="has-text-right ext-col"><u>15.85</u></td>
+                  <td class="has-text-right"><strong>13.59</strong></td><td class="has-text-right"><u>13.81</u></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">PSNR&uarr; (higher is better). RayDer uses its own predicted poses, not GT annotations. <strong>Bold</strong> = best, <u>underline</u> = second best. <sup>&dagger;</sup>Diffusion-based. <sup>&Dagger;</sup>Evaluates at 512&sup2; instead of 576&sup2;. <sup>*</sup>Multi-dataset checkpoint.</p>
+        </div>
+
+        <!-- Static vs Dynamic Data -->
+        <div class="results-block">
+          <h3 class="subtitle is-5 table-title">Static vs. Dynamic Training Data</h3>
+          <div class="content paper-copy">
+            <p>
+              Despite evaluation being performed on static scenes, training on more (partially dynamic) video empirically outweighs the benefit of a cleaner, domain-aligned training distribution.
+            </p>
+          </div>
+          <div class="results-table-wrapper compact-table-wrapper">
+            <table class="table is-fullwidth results-table compact-results">
+              <thead>
+                <tr>
+                  <th>Training Data</th>
+                  <th class="has-text-right">PSNR&uarr;</th>
+                  <th class="has-text-right">LPIPS&darr;</th>
+                  <th class="has-text-right">SSIM&uarr;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Static Mix only (~250k)</td><td class="has-text-right">28.68</td><td class="has-text-right">0.158</td><td class="has-text-right">0.888</td></tr>
+                <tr><td>SpatialVid only (~2.7M)</td><td class="has-text-right"><u>29.38</u></td><td class="has-text-right"><strong>0.135</strong></td><td class="has-text-right"><u>0.899</u></td></tr>
+                <tr class="ours-row"><td>Static Mix + SpatialVid</td><td class="has-text-right"><strong>29.42</strong></td><td class="has-text-right"><u>0.136</u></td><td class="has-text-right"><strong>0.901</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">All models are RayDer-L trained for 500k steps. Evaluated on RE10K.</p>
+        </div>
+
+        <!-- Self-supervised vs Supervised -->
+        <div class="results-block">
+          <h3 class="subtitle is-5 table-title">Self-supervised vs. Supervised on Dynamic Data</h3>
+          <div class="content paper-copy">
+            <p>
+              Self-supervised RayDer outperforms LVSM trained with pseudo-GT poses from MegaSaM by +2.9 dB PSNR, despite not using any pose supervision. Obtaining the pseudo-GT annotations is an order of magnitude more expensive in GPU-hours than training either NVS model.
+            </p>
+          </div>
+          <div class="results-table-wrapper compact-table-wrapper">
+            <table class="table is-fullwidth results-table compact-results">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th class="has-text-centered">GT Pose</th>
+                  <th class="has-text-right">PSNR&uarr;</th>
+                  <th class="has-text-right">LPIPS&darr;</th>
+                  <th class="has-text-right">SSIM&uarr;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>LVSM (SpatialVid)</td><td class="has-text-centered">&check;</td><td class="has-text-right">25.44</td><td class="has-text-right">0.184</td><td class="has-text-right">0.729</td></tr>
+                <tr class="ours-row"><td>RayDer-B (SpatialVid)</td><td class="has-text-centered">&cross;</td><td class="has-text-right"><strong>28.35</strong></td><td class="has-text-right"><strong>0.151</strong></td><td class="has-text-right"><strong>0.879</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">Evaluated on RE10K. Both models trained on SpatialVid at matched settings (transformer size, view count, training steps).</p>
+        </div>
+
+        <!-- Pose Transferability -->
+        <div class="results-block">
+          <h3 class="subtitle is-5 table-title">Pose Transferability</h3>
+          <div class="content paper-copy">
+            <p>
+              RayDer learns transferable camera poses comparable to the specialized XFactor method &ndash; despite using a simpler, single-stage training setup with no explicit pose transfer supervision &ndash; a notable improvement over RayZer, whose pose representations were shown to lack transferability.
+            </p>
+          </div>
+          <div class="results-table-wrapper compact-table-wrapper" style="max-width: 700px;">
+            <table class="table is-fullwidth results-table compact-results">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th class="has-text-right">R@10&deg;&uarr;</th>
+                  <th class="has-text-right">R@20&deg;&uarr;</th>
+                  <th class="has-text-right">R@30&deg;&uarr;</th>
+                  <th class="has-text-right">T@10&deg;&uarr;</th>
+                  <th class="has-text-right">T@20&deg;&uarr;</th>
+                  <th class="has-text-right">T@30&deg;&uarr;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>RayZer</td><td class="has-text-right">0.48</td><td class="has-text-right">0.61</td><td class="has-text-right">0.88</td><td class="has-text-right">0.12</td><td class="has-text-right">0.32</td><td class="has-text-right">0.44</td></tr>
+                <tr><td>XFactor</td><td class="has-text-right"><strong>0.93</strong></td><td class="has-text-right"><u>0.97</u></td><td class="has-text-right"><strong>0.99</strong></td><td class="has-text-right"><strong>0.55</strong></td><td class="has-text-right"><strong>0.83</strong></td><td class="has-text-right"><strong>0.90</strong></td></tr>
+                <tr class="ours-row"><td>RayDer-L (Ours)</td><td class="has-text-right"><u>0.92</u></td><td class="has-text-right"><strong>0.98</strong></td><td class="has-text-right"><strong>0.99</strong></td><td class="has-text-right"><u>0.44</u></td><td class="has-text-right"><strong>0.83</strong></td><td class="has-text-right"><strong>0.90</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">Pose transferability (TPS metric) on DL3DV-10K following the protocol of XFactor. <strong>Bold</strong> = best, <u>underline</u> = second best.</p>
+        </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== QUALITATIVE ==================== -->
+    <section class="section" id="qualitative">
+      <div class="container is-max-desktop">
+        <h2 class="title is-3 section-title">Qualitative Results</h2>
+
+        <figure class="paper-figure figure-padded">
+          <img src="static/images/paper-svg/qualitative-comparison.svg" alt="Zero-shot qualitative samples of RayDer-L compared with E-RayZer in typical NVS and extreme settings" loading="lazy">
+          <figcaption>
+            <strong>Zero-shot Qualitative Comparison.</strong>
+            RayDer-L vs. E-RayZer in <strong>(a)</strong> typical NVS settings and <strong>(b)</strong> an extreme setting with near-zero context view overlap.
+            Trained on large-scale non-static-constrained video, RayDer outperforms E-RayZer &ndash; a prior model trained on a multi-dataset static mixture &ndash; by a wide margin.
+          </figcaption>
+        </figure>
+
+      </div>
+    </section>
+
+    <!-- ==================== BIBTEX ==================== -->
+    <section class="section hero is-light" id="bibtex">
+      <div class="hero-body">
+        <div class="container is-max-desktop content">
+          <div class="bibtex-header">
+            <h2 class="title is-3 section-title">BibTeX</h2>
+            <button class="copy-bibtex-btn" type="button" onclick="copyBibTeX()">
+              <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 00-2 2v12h2V3h12zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2m0 16H8V7h11z"/></svg>
+              <span class="copy-text">Copy</span>
+            </button>
+          </div>
+          <pre id="bibtex-code"><code>@misc{prestel2026rayderscalableselfsupervisednovel,
+      title={RayDer: Scalable Self-Supervised Novel View Synthesis from Real-World Video}, 
+      author={Ulrich Prestel and Stefan Andreas Baumann and Nick Stracke and Björn Ommer},
+      year={2026},
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container is-max-desktop">
+      <div class="content has-text-centered">
+        <p>Website template adapted from the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank" rel="noreferrer">Academic Project Page Template</a>.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script defer src="static/js/index.js"></script>
+</body>
+</html>
