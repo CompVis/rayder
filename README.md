@@ -18,7 +18,22 @@
 
 Self-supervised novel view synthesis methods are fundamentally *data-limited*: they require static-scene training data, which is scarce. RayDer removes this bottleneck by enabling stable training on **general, dynamic real-world video**. By consolidating three separate networks into one unified transformer, introducing dynamic state prediction with dropout, and improving pose learning through autoregressive training, RayDer's performance scales predictably with data, model size, and compute — following power-law scaling relationships (R² > 0.99) analogous to those observed in LLMs.
 
+<p align="center">
+  <img src="docs/static/images/paper-svg/teaser.png" alt="RayDer enables training NVS from abundant general video, removing the static-scene data bottleneck" width="100%">
+</p>
+
 This is a minimal, self-contained PyTorch re-implementation of RayDer (covering inference, training code coming soon).
+
+
+
+## Results
+Zero-shot qualitative comparison of RayDer-L against E-RayZer in various NVS settings and an extreme setting with near-zero context-view overlap:
+
+<p align="center">
+  <img src="docs/static/images/paper-svg/qualitative.png" alt="Zero-shot qualitative samples of RayDer-L compared with E-RayZer in typical NVS and extreme settings" width="100%">
+</p>
+
+See the [project page](https://compvis.github.io/rayder/) for additional samples (incl. videos) and analysis.
 
 
 
